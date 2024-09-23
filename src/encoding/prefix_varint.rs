@@ -1,4 +1,7 @@
-/// See: https://github.com/WebAssembly/design/issues/601#issuecomment-196022303
+//! # Prefix-varint encoding and decoding
+//!
+//! This file implements the encoding described here:
+//! <https://github.com/WebAssembly/design/issues/601#issuecomment-196022303>
 
 fn unaligned_load_u64(p: &[u8]) -> u64 {
   let mut array = [0u8; 8];
@@ -11,6 +14,7 @@ fn length(initial: u8) -> u32 {
   1 + (initial as u32 | 0x100).trailing_zeros()
 }
 
+/// Decodes an unsigned 64-bit integer from a byte slice, assuming the prefix-varint format.
 pub fn decode(p: &[u8]) -> u64 {
   let length = length(*p.first().unwrap());
   if length < 9 {
@@ -21,6 +25,7 @@ pub fn decode(p: &[u8]) -> u64 {
   }
 }
 
+/// Encodes an unsigned 64-bit integer into a byte vector, using the prefix-varint format.
 pub fn encode(x: u64, output: &mut Vec<u8>) {
   let bits = 64 - (x | 1).leading_zeros();
   let mut bytes = 1 + (bits - 1) / 7;
@@ -44,29 +49,29 @@ mod tests {
 
   #[test]
   fn test_unaligned_load_u64() {
-    // Test loading less than 8 bytes
+    // Test loading less than 8 bytes.
     assert_eq!(unaligned_load_u64(&[0x01, 0x02, 0x03]), 0x30201);
-    // Test loading exactly 8 bytes
+    // Test loading exactly 8 bytes.
     assert_eq!(unaligned_load_u64(&[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]), 0x807060504030201);
-    // Test loading more than 8 bytes (should only load first 8)
+    // Test loading more than 8 bytes (should only load first 8).
     assert_eq!(unaligned_load_u64(&[0xFF; 16]), 0xFFFFFFFFFFFFFFFF);
-    // Test loading empty slice (should return 0)
+    // Test loading empty slice (should return 0).
     assert_eq!(unaligned_load_u64(&[]), 0);
   }
 
   #[test]
   fn test_length() {
-    // Test various initial bytes and expected lengths
+    // Test various initial bytes and expected lengths.
     let test_cases = vec![
-      (0b00000001, 1), // Trailing zeros: 0, length: 1
-      (0b00000010, 2), // Trailing zeros: 1, length: 2
-      (0b00000100, 3), // Trailing zeros: 2, length: 3
-      (0b00001000, 4), // Trailing zeros: 3, length: 4
-      (0b00010000, 5), // Trailing zeros: 4, length: 5
-      (0b00100000, 6), // Trailing zeros: 5, length: 6
-      (0b01000000, 7), // Trailing zeros: 6, length: 7
-      (0b10000000, 8), // Trailing zeros: 7, length: 8
-      (0b00000000, 9), // Trailing zeros: 8, length: 9
+      (0b00000001, 1),
+      (0b00000010, 2),
+      (0b00000100, 3),
+      (0b00001000, 4),
+      (0b00010000, 5),
+      (0b00100000, 6),
+      (0b01000000, 7),
+      (0b10000000, 8),
+      (0b00000000, 9),
     ];
     for (initial, expected) in test_cases {
       assert_eq!(length(initial), expected, "Initial byte: {:08b}", initial);
@@ -75,7 +80,7 @@ mod tests {
 
   #[test]
   fn test_specific_encode() {
-    // Test specific known encodings
+    // Test specific known encodings.
     let test_cases = vec![
       (0, vec![0x01]),
       (1, vec![0x03]),
@@ -96,7 +101,7 @@ mod tests {
 
   #[test]
   fn test_specific_decode() {
-    // Test specific known decodings
+    // Test specific known decodings.
     let test_cases = vec![
       (0, vec![0x01]),
       (1, vec![0x03]),
@@ -116,6 +121,7 @@ mod tests {
 
   #[test]
   fn test_round_trip_boundary_values() {
+    // Test round-trip encoding and decoding using boundary values.
     let test_values = vec![
       0u64,
       1,
@@ -147,6 +153,7 @@ mod tests {
 
   #[test]
   fn test_round_trip_random_values() {
+    // Test round-trip encoding and decoding using random values.
     let mut rng = rand::thread_rng();
     for _ in 0..1000 {
       let value: u64 = rng.gen();

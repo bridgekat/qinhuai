@@ -3,7 +3,7 @@ use std::ops;
 
 /// # Prolly tree
 ///
-/// A Prolly tree is a binary search tree typically with a high fanout. It has a structure similar
+/// A Prolly tree is an N-ary search tree typically with a high fanout. It has a structure similar
 /// to that of B+ trees.
 ///
 /// Unlike B+ trees, it does not balance itself through rotations; instead, it uses a pseudo-random
@@ -88,7 +88,9 @@ pub trait Policy {
   fn content_hash(&self, content: &[u8]) -> [u8];
 }
 
-/// # The default implementation for [`Tree`]
+/// # The primary implementation for [`Tree`]
+///
+/// ## Implementation notes
 ///
 /// Invariants maintained by all methods:
 ///

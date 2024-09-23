@@ -4,4 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+fs2 = "0.4.3"
 rand = "0.8.5"
+tempfile = "3.12.0"
