@@ -1,7 +1,7 @@
 //! # Prefix-varint encoding and decoding
 //!
-//! This file implements the encoding described here:
-//! <https://github.com/WebAssembly/design/issues/601#issuecomment-196022303>
+//! This module implements the encoding described
+//! [here](https://github.com/WebAssembly/design/issues/601#issuecomment-196022303).
 
 fn unaligned_load_u64(p: &[u8]) -> u64 {
   let mut array = [0u8; 8];
@@ -52,7 +52,10 @@ mod tests {
     // Test loading less than 8 bytes.
     assert_eq!(unaligned_load_u64(&[0x01, 0x02, 0x03]), 0x30201);
     // Test loading exactly 8 bytes.
-    assert_eq!(unaligned_load_u64(&[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]), 0x807060504030201);
+    assert_eq!(
+      unaligned_load_u64(&[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]),
+      0x807060504030201
+    );
     // Test loading more than 8 bytes (should only load first 8).
     assert_eq!(unaligned_load_u64(&[0xFF; 16]), 0xFFFFFFFFFFFFFFFF);
     // Test loading empty slice (should return 0).
@@ -147,7 +150,11 @@ mod tests {
       let mut encoded = Vec::new();
       encode(value, &mut encoded);
       let decoded = decode(&encoded);
-      assert_eq!(decoded, value, "Round-trip failed for value: {}. Encoded bytes: {:?}", value, encoded);
+      assert_eq!(
+        decoded, value,
+        "Round-trip failed for value: {}. Encoded bytes: {:?}",
+        value, encoded
+      );
     }
   }
 
@@ -160,7 +167,11 @@ mod tests {
       let mut encoded = Vec::new();
       encode(value, &mut encoded);
       let decoded = decode(&encoded);
-      assert_eq!(decoded, value, "Round-trip failed for value: {}. Encoded bytes: {:?}", value, encoded);
+      assert_eq!(
+        decoded, value,
+        "Round-trip failed for value: {}. Encoded bytes: {:?}",
+        value, encoded
+      );
     }
   }
 }

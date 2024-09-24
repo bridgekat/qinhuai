@@ -1,3 +1,12 @@
+//! # OS interfaces
+//!
+//! This module defines the fundamental OS interfaces, as well as a standard implementation and an
+//! in-memory implementation.
+//!
+//! There is planned support for custom implementations through FFI.
+
+#![doc = include_str!("../../doc/atomic_commit.md")]
+
 use std::cell;
 use std::collections;
 use std::fmt;
@@ -10,7 +19,7 @@ use std::rc;
 ///
 /// This is the main OS interface that Qinhuai uses to interact with the file system.
 ///
-/// See: <https://www.sqlite.org/c3ref/vfs.html>
+/// This is analogous to [the SQLite counterpart](https://www.sqlite.org/c3ref/vfs.html).
 pub trait FileSystem {
   /// The type of errors that can occur when interacting with this file system.
   type Error: fmt::Debug + fmt::Display;
@@ -32,7 +41,7 @@ pub trait FileSystem {
 ///
 /// This is the main OS interface that Qinhuai uses to interact with files.
 ///
-/// See: <https://www.sqlite.org/c3ref/io_methods.html>
+/// This is analogous to [the SQLite counterpart](https://www.sqlite.org/c3ref/io_methods.html).
 pub trait File {
   /// The type of errors that can occur when interacting with this file.
   type Error: fmt::Debug + fmt::Display;
@@ -62,7 +71,7 @@ pub trait File {
   fn unlock(&mut self) -> Result<(), Self::Error>;
 }
 
-/// # The primary implementation for [`FileSystem`]
+/// # Standard implementation for [`FileSystem`]
 ///
 /// This is simply a wrapper around [`std::fs`].
 #[derive(Debug)]
@@ -81,7 +90,8 @@ impl FileSystem for StandardFileSystem {
   type File = StandardFile;
 
   fn open(&mut self, path: &Self::Path) -> Result<Self::File, Self::Error> {
-    let file = fs::OpenOptions::new().read(true).write(true).create(true).truncate(false).open(path)?;
+    let file =
+      fs::OpenOptions::new().read(true).write(true).create(true).truncate(false).open(path)?;
     Ok(Self::File::from(file))
   }
 
@@ -90,7 +100,7 @@ impl FileSystem for StandardFileSystem {
   }
 }
 
-/// # The primary implementation for [`File`]
+/// # Standard implementation for [`File`]
 ///
 /// This is simply a wrapper around [`std::fs::File`].
 #[derive(Debug)]
